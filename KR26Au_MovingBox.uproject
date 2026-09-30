@@ -1,0 +1,22 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{0855A75C-49A1-FB16-0D2A-138001F91E80}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "KR26Au_MovingBox",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		}
+	]
+}
