@@ -1,6 +1,6 @@
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/LES_Session.h"
 
-#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/LESEditorComponent.h"
+#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/LES_EditorComponent.h"
 #include "KR26Au_MovingBox/Public/Core/Level/COntent/LESGoal.h"
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/LES_PlaceableInterface.h"
 
