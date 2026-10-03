@@ -11,7 +11,14 @@ class UInputComponent;
 DECLARE_LOG_CATEGORY_EXTERN(LES_Editor, Log, All);
 
 /*
- * LES input/camera adapter during the editing phase.
+ * LES player control (input) adapter during the editing phase.
+ *
+ * Input:
+ * - Player Key inputs.
+ *
+ * Function:
+ * - Player interface; redirect request to SessionManager.
+ * - Add key binding specific to editing phase.
  *
  * Workflow:
  * - Adds persistent reset/next-level bindings.
@@ -20,11 +27,11 @@ DECLARE_LOG_CATEGORY_EXTERN(LES_Editor, Log, All);
  *
  * Boundary:
  * - Assumes normal gameplay uses GameOnly input.
- * - Custom controller Tick-driven interaction must also check session phase.
  *
  * TODO:
  * - Add mouse scroll to change plane height?
  * - Move Editor inputs to IAM and IA.
+ * - UpdateCursorPreview() failure logging in ticks, need to change ts
  */
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class KR26AU_MOVINGBOX_API ULES_EditorAdaptorComponent : public UActorComponent
@@ -58,7 +65,7 @@ private:
 
     /*--- Cursor ---*/
 
-    void UpdateCursorPreview();
+    void UpdateCursorPreview() const;
 
     /*--- Inputs ---*/
 

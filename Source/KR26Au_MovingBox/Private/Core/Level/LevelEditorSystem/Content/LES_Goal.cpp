@@ -1,4 +1,4 @@
-#include "KR26Au_MovingBox/Public/Core/Level/Content/LES_Goal.h"
+#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Content/LES_Goal.h"
 
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"

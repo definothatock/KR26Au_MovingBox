@@ -37,14 +37,38 @@ struct FLES_PreviewCollisionState
 /*
  * Owns the runtime editing (placement) state for LES session.
  *
+ * Input:
+ * - Command from SessionManager
+ *
  * Function:
  * - Performs all editing actions.
  *
- * Rules:
- * - 
+ * Output:
+ * - Spawn Placeable objects.
  *
- * Note:
- * ALES_SessionManager remains responsible for deciding when editing is permitted.
+ * Rules:
+ * - ALES_SessionManager decides when editing is permitted (Owner).
+ * - Only actors stored in PlacedRecords are editable.
+ * - Preview is a real spawned instance; promotes to placed when confirm and valid.
+ * - Grid is intentional placement aids only: some Entity is not unify in shape, e.g. WoodenPLank.
+ * - LESPlacementBounds provide advisory check; VisualMesh validate actual collisions.
+ *
+ * Flow:
+ * Initialize -> BeginEditing -> Choose a placeable type
+ *     ↓
+ * Spawn hidden preview actor -> Build snapped candidate transform -> Move/show preview actor
+ *     ↓
+ * Run advisory placement-bound check -> User Confirm placement
+ *     ↓
+ * Run authoritative VisualMesh collision check
+ *     ↓
+ *     ├─ Invalid → reject placement
+ *     └─ Valid
+ *          ├─ New placement → register actor and create next preview
+ *          └─ Move existing actor → keep new transform
+ *     ↓
+ * Continue editing -> Cancel preview / end editing
+ *
  *
  * TODO:
  *  - bound colour only reflects premature collision check, should I make it reflect other condition too (ie out of availability)?
@@ -52,7 +76,8 @@ struct FLES_PreviewCollisionState
  *  - If EditorAdaptor Changed the keys, remember the change the logs in here too! Should change to referencing bt then!
  *
  * Ref:
- * UE now has snapping in FMath: https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/Core/FMath/GridSnap?lang=en-US
+ * https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/Core/FMath/GridSnap?lang=en-US
+ * https://www.youtube.com/watch?v=b88Dj_k9b84
  */
 UCLASS(ClassGroup=(LES), meta=(BlueprintSpawnableComponent))
 class KR26AU_MOVINGBOX_API ULES_PlacementComponent
@@ -122,21 +147,25 @@ private:
     int32 FindRecord(const AActor* Actor) const;
     void RemoveInvalidRecords();
 
-    const ALES_PlaceableBase* GetPlaceableDefaults(
-    int32 DefinitionIndex,
-    FString& OutReason) const;
+    // Clears references and flags after preview actor cleanup has already occurred.
+    void ResetPreviewRuntimeState();
 
+    const ALES_PlaceableBase* GetPlaceableDefaults(
+        int32 DefinitionIndex,
+        FString& OutReason) const;
+
+    // Build preview of the placement candidate. Grid for placement aid.
     bool BuildCandidateTransform(
         const FVector& PlanePoint,
         FTransform& OutTransform,
         FString& OutReason) const;
-    
-    // Designer-provided placement bounds; advisory only - Preview colour/status, never decides.
+
+    // Designer-provided placement bounds; advisory via bound colour/status.
     bool ValidatePreviewBounds(
         const ALES_PlaceableBase* Preview,
         FString& OutReason) const;
-    
-    // Authoritative placement validation; VisualMesh collision geometry.
+
+    // Authoritative placement validation using VisualMesh collision geometry.
     bool ValidateMeshPlacement(
         const ALES_PlaceableBase* Placeable,
         AActor* IgnoredActor,

@@ -1,12 +1,12 @@
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/LES_SessionManager.h"
 
-#include "KR26Au_MovingBox/Public/Core/Level/COntent/LES_Goal.h"
+#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Content/LES_Goal.h"
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Component/LES_EditorAdaptorComponent.h"
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Component/LES_ObjectiveComponent.h"
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Component/LES_PhysicsFreezeComponent.h"
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Component/LES_PlacementComponent.h"
 
-#include "KR26Au_MovingBox/Public/Core/Level/Content/LES_PlaceableBase.h"
+#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Content/LES_PlaceableBase.h"
 
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"

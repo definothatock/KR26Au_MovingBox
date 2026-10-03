@@ -19,7 +19,7 @@ ULES_EditorAdaptorComponent::ULES_EditorAdaptorComponent()
 
 
 /*--- ANCHOR: Change to IMC and Actions later, for better input configuration ---*/
-// Especially Function keys they overlap with editor 
+// Especially Function keys they overlap with the UE Editor 
 bool ULES_EditorAdaptorComponent::Request_InitEditModeInput(
     ALES_SessionManager* InSession,
     APlayerController* InController)
@@ -28,12 +28,23 @@ bool ULES_EditorAdaptorComponent::Request_InitEditModeInput(
         || !IsValid(InController)
         || !InController->IsLocalController()
         || !IsValid(InController->GetPawn()))
-    {return false;}
+    {
+        UE_LOG(LogTemp, Error, TEXT("[LES][Adaptor] Init Failed! Check prerequisite conditions!"));
+        return false;
+    }
 
     if (GlobalInput)
     {
-        return Session.Get() == InSession
+        const bool bSameBinding =
+            Session.Get() == InSession
             && Controller.Get() == InController;
+
+        if (!bSameBinding)
+        {UE_LOG(LES_Editor, Warning, TEXT("[LES][Adaptor] Init rejected: input is already bound to a different session or controller."));}
+        else
+        {UE_LOG(LES_Editor, Warning, TEXT("[LES][Adaptor] Init ignored: adaptor is already initialized."));}
+
+        return bSameBinding;
     }
 
     Session = InSession;
@@ -102,8 +113,19 @@ bool ULES_EditorAdaptorComponent::Request_EnterEditing()
     APlayerController* PC = Controller.Get();
     ALES_SessionManager* ActiveSession = Session.Get();
 
-    if (!IsValid(PC) || !IsValid(ActiveSession) || bEditingApplied)
+    if (!IsValid(PC))
     {
+        UE_LOG(LES_Editor, Warning, TEXT("[LES][Adaptor] Enter editing rejected: controller is invalid."));
+        return false;
+    }
+    if (!IsValid(ActiveSession))
+    {
+        UE_LOG(LES_Editor, Warning, TEXT("[LES][Adaptor] Enter editing rejected: session is invalid."));
+        return false;
+    }
+    if (bEditingApplied)
+    {
+        UE_LOG(LES_Editor, Warning, TEXT("[LES][Adaptor] Enter editing ignored: editing is already active."));
         return false;
     }
 
@@ -147,7 +169,6 @@ bool ULES_EditorAdaptorComponent::Request_LeaveEditing()
 
     PC->PopInputComponent(EditingInput);
 
-    // These calls balance the ignore-input calls made by this component.
     PC->SetIgnoreMoveInput(false);
     PC->SetIgnoreLookInput(false);
 
@@ -173,7 +194,6 @@ bool ULES_EditorAdaptorComponent::Request_LeaveEditing()
 
 /* ==================== Overrides ==================== */
 
-// ANCHOR: check can ticking-cursor-check be avoided later.
 void ULES_EditorAdaptorComponent::TickComponent(
     float DeltaTime,
     ELevelTick TickType,
@@ -210,12 +230,12 @@ void ULES_EditorAdaptorComponent::EndPlay(
 
 /*--- Cursor ---*/
 
-void ULES_EditorAdaptorComponent::UpdateCursorPreview()
+void ULES_EditorAdaptorComponent::UpdateCursorPreview() const
 {
-    APlayerController* PC = Controller.Get();
-    ALES_SessionManager* ActiveSession = Session.Get();
+    const APlayerController* PlyCtrl = Controller.Get();
+    const ALES_SessionManager* ActiveSession = Session.Get();
 
-    if (!IsValid(PC)
+    if (!IsValid(PlyCtrl)
         || !IsValid(ActiveSession)
         || !ActiveSession->HasPreview())
     {return;}
@@ -223,10 +243,19 @@ void ULES_EditorAdaptorComponent::UpdateCursorPreview()
     FVector RayOrigin;
     FVector RayDirection;
 
-    if (!PC->DeprojectMousePositionToWorld(RayOrigin, RayDirection) // ray from cam to cursor
-        || FMath::Abs(RayDirection.Z) < KINDA_SMALL_NUMBER) // ANCHOR: edge case - parallel
+    if (!PlyCtrl->DeprojectMousePositionToWorld(
+            RayOrigin,
+            RayDirection))
     {
         ActiveSession->UpdatePlaceablePreview(FVector::ZeroVector, false);
+        // UE_LOG(LogTemp, Warning, TEXT("LES][Adaptor] Cursor could not be projected into the world."));
+        return;
+    }
+
+    if (FMath::IsNearlyZero(RayDirection.Z))
+    {
+        ActiveSession->UpdatePlaceablePreview(FVector::ZeroVector, false);
+        UE_LOG(LogTemp, Warning, TEXT("[LES][Adaptor] Cursor ray is parallel to the placement plane."));
         return;
     }
 
@@ -234,9 +263,10 @@ void ULES_EditorAdaptorComponent::UpdateCursorPreview()
         (ActiveSession->GetPlacementPlaneZ() - RayOrigin.Z)
         / RayDirection.Z;
 
-    if (DistFromLESPlane < 0.0) // ANCHOR: edge case - parallel
+    if (DistFromLESPlane < 0.0)
     {
         ActiveSession->UpdatePlaceablePreview(FVector::ZeroVector, false);
+        UE_LOG(LogTemp, Warning, TEXT("LES][Adaptor] Cursor ray intersects the placement plane behind the camera."));
         return;
     }
 

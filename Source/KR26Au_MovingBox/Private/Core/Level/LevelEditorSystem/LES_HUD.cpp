@@ -14,7 +14,7 @@ void ALES_HUD::DrawHUD()
     {return;}
 
     if (!CachedSession.IsValid())
-    {
+    {   // ANCHOR: inefficient
         for (TActorIterator<ALES_SessionManager> It(GetWorld()); It; ++It)
         {
             CachedSession = *It;

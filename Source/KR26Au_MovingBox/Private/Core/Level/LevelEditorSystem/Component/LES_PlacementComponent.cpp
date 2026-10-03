@@ -1,6 +1,6 @@
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Component/LES_PlacementComponent.h"
 
-#include "KR26Au_MovingBox/Public/Core/Level/Content/LES_PlaceableBase.h"
+#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Content/LES_PlaceableBase.h"
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/DataStruct/LES_ConfigStructs.h"
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Interface/LES_PlaceableInterface.h"
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/LES_SessionManager.h"
@@ -47,13 +47,9 @@ void ULES_PlacementComponent::Initialize(
 void ULES_PlacementComponent::BeginEditing()
 {
     bEditingActive = true;
-    bHasPreview = false;
-    bCandidateValid = false;
-    bMovingSelection = false;
 
     SelectedActor.Reset();
-    PreviewActor.Reset();
-    PreviewCollisionStates.Reset();
+    ResetPreviewRuntimeState();
 
     StatusText = TEXT("Tab: choose a type. Right mouse: selection mode.");
 
@@ -171,14 +167,9 @@ void ULES_PlacementComponent::CancelPreview()
     }
 
     RestorePreviewActorCollision();
-
-    PreviewActor.Reset();
-    PreviewCollisionStates.Reset();
+    ResetPreviewRuntimeState();
 
     CurrentDefinition = INDEX_NONE;
-    bHasPreview = false;
-    bCandidateValid = false;
-    bMovingSelection = false;
 
     if (bEditingActive)
     {
@@ -295,7 +286,9 @@ void ULES_PlacementComponent::UpdatePreviewFromPlane(
     bool bHasPlanePoint)
 {
     if (!bEditingActive || !bHasPreview)
-    {return;}
+    {
+        return;
+    }
 
     ALES_PlaceableBase* Preview = PreviewActor.Get();
 
@@ -337,7 +330,7 @@ void ULES_PlacementComponent::UpdatePreviewFromPlane(
 
     ShowPreview();
 
-    // advisory only. Confirmation always runs ValidateMeshPlacement instead
+    // advisory only. Confirmation always runs ValidateMeshPlacement()
     bCandidateValid = ValidatePreviewBounds(Preview, Reason);
 
     StatusText = bCandidateValid
@@ -370,13 +363,9 @@ bool ULES_PlacementComponent::ConfirmPlacement()
         return false;
     }
 
-    // Authoritative placement check
     if (!ValidateMeshPlacement(Preview, Preview, Reason))
     {
-        RejectPlacement(
-            FString::Printf(
-                TEXT("Cannot place: actual mesh collision failed: %s"),
-                *Reason));
+        RejectPlacement(FString::Printf(TEXT("Cannot place: actual mesh collision failed: %s"),*Reason));
 
         return false;
     }
@@ -385,12 +374,7 @@ bool ULES_PlacementComponent::ConfirmPlacement()
 
     if (bMovingSelection)
     {
-        PreviewActor.Reset();
-        PreviewCollisionStates.Reset();
-
-        bHasPreview = false;
-        bCandidateValid = false;
-        bMovingSelection = false;
+        ResetPreviewRuntimeState();
 
         StatusText = TEXT("Entity moved.");
 
@@ -414,13 +398,9 @@ bool ULES_PlacementComponent::ConfirmPlacement()
         TEXT("[LES][Placement] Placed '%s'; type=%d; location=%s; remaining=%d"),
         *Preview->GetName(), CurrentDefinition, *Preview->GetActorLocation().ToString(), GetRemainingQuantity(CurrentDefinition));
 
-    PreviewActor.Reset();
-    PreviewCollisionStates.Reset();
-
-    bHasPreview = false;
-    bCandidateValid = false;
-
     const int32 PlacedDefinition = CurrentDefinition;
+
+    ResetPreviewRuntimeState();
 
     FString SpawnReason;
 
@@ -510,6 +490,16 @@ void ULES_PlacementComponent::RemoveInvalidRecords()
         });
 }
 
+void ULES_PlacementComponent::ResetPreviewRuntimeState()
+{
+    PreviewActor.Reset();
+    PreviewCollisionStates.Reset();
+
+    bHasPreview = false;
+    bCandidateValid = false;
+    bMovingSelection = false;
+}
+
 const ALES_PlaceableBase* ULES_PlacementComponent::GetPlaceableDefaults(
     int32 DefinitionIndex,
     FString& OutReason) const
@@ -530,6 +520,7 @@ const ALES_PlaceableBase* ULES_PlacementComponent::GetPlaceableDefaults(
         return nullptr;
     }
 
+    // Unreal Reflection always make a def instance for instantiating. Use that to preview.
     const ALES_PlaceableBase* Defaults =
         Definition->ActorClass->GetDefaultObject<ALES_PlaceableBase>();
 
@@ -608,11 +599,8 @@ bool ULES_PlacementComponent::BuildCandidateTransform(
 
     Location.Y =
         Origin.Y + FMath::GridSnap(PlanePoint.Y - Origin.Y, Grid);
-
-    /*
-     * Grid only aligns X/Y.
-     * Z is derived from the actual mesh, not LESPlacementBounds.
-     */
+    
+    // rid only aligns X & Y; Z is derived from the actual mesh, not LESPlacementBounds.
     Location.Z =
         Origin.Z
         + LevelConfig->FloorClearance
@@ -740,15 +728,13 @@ bool ULES_PlacementComponent::ValidateMeshPlacement(
 
     UStaticMeshComponent* VisualMesh = Placeable->GetVisualMesh();
 
-    if (!IsValid(VisualMesh)
-        || !IsValid(VisualMesh->GetStaticMesh()))
+    if (!IsValid(VisualMesh) || !IsValid(VisualMesh->GetStaticMesh()))
     {
         OutReason = TEXT("Placeable has no valid VisualMesh.");
         return false;
     }
 
-    if (VisualMesh->GetCollisionEnabled()
-        == ECollisionEnabled::NoCollision)
+    if (VisualMesh->GetCollisionEnabled() == ECollisionEnabled::NoCollision)
     {
         OutReason = TEXT(
             "VisualMesh collision is disabled; it cannot be used for placement validation.");
@@ -757,8 +743,7 @@ bool ULES_PlacementComponent::ValidateMeshPlacement(
     }
 
     FComponentQueryParams QueryParams(
-        SCENE_QUERY_STAT(LESPlaceableMesh),
-        Placeable);
+        SCENE_QUERY_STAT(LESPlaceableMesh), Placeable);
 
     QueryParams.AddIgnoredActor(ActiveSession);
 
@@ -779,31 +764,36 @@ bool ULES_PlacementComponent::ValidateMeshPlacement(
 
     for (const FOverlapResult& Overlap : Overlaps)
     {
-        UPrimitiveComponent* Other = Overlap.GetComponent();
+        UPrimitiveComponent* OtherComponent = Overlap.GetComponent();
 
-        if (!IsValid(Other)
-            || Other->GetCollisionEnabled()
+        if (!IsValid(OtherComponent)
+            || OtherComponent->GetCollisionEnabled()
                 == ECollisionEnabled::NoCollision)
         {
             continue;
         }
 
-        const ECollisionResponse MeshResponse =
+        const ECollisionResponse VisualMeshResponse =
             VisualMesh->GetCollisionResponseToChannel(
-                Other->GetCollisionObjectType());
+                OtherComponent->GetCollisionObjectType());
 
-        const ECollisionResponse OtherResponse =
-            Other->GetCollisionResponseToChannel(
+        const ECollisionResponse OtherComponentResponse =
+            OtherComponent->GetCollisionResponseToChannel(
                 VisualMesh->GetCollisionObjectType());
 
-        if (MeshResponse == ECR_Block && OtherResponse == ECR_Block)
-        {
-            OutReason = FString::Printf(
-                TEXT("VisualMesh overlaps %s."),
-                *GetNameSafe(Other->GetOwner()));
+        const bool bMutuallyBlocking =
+            VisualMeshResponse == ECR_Block
+            && OtherComponentResponse == ECR_Block;
 
-            return false;
+        if (!bMutuallyBlocking)
+        {
+            continue;
         }
+
+        OutReason = FString::Printf(TEXT("VisualMesh overlaps %s."),
+            *GetNameSafe(OtherComponent->GetOwner()));
+
+        return false;
     }
 
     OutReason.Reset();
@@ -900,7 +890,7 @@ void ULES_PlacementComponent::PrepareActorForPreview(
         State.bSimulatingPhysics =
             Component->IsSimulatingPhysics();
         
-        // QueryOnly keeps real collision geometry avail for ComponentOverlapMulti w/o lettin preview physics affect play.
+        // QueryOnly keeps real collision geometry avail for CompOverlapMulti w/o letting preview physics affect play.
         if (State.CollisionEnabled != ECollisionEnabled::NoCollision)
         {
             Component->SetCollisionEnabled(ECollisionEnabled::QueryOnly);

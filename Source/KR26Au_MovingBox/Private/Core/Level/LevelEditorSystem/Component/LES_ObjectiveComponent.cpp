@@ -1,6 +1,6 @@
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Component/LES_ObjectiveComponent.h"
 
-#include "KR26Au_MovingBox/Public/Core/Level/COntent/LES_Goal.h"
+#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Content/LES_Goal.h"
 
 ULES_ObjectiveComponent::ULES_ObjectiveComponent()
 {

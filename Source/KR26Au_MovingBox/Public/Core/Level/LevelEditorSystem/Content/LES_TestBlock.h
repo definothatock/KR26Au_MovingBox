@@ -2,13 +2,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "../LevelEditorSystem/Interface/LES_PlaceableInterface.h"
+#include "../Interface/LES_PlaceableInterface.h"
 #include "LES_TestBlock.generated.h"
 
 class UStaticMeshComponent;
 
-/*
- * Used for testing LES functionality only; Does nothing gameplay wise.
+/**
+ * Minimal interface example for exercising LES activation behavior.
+ *
+ * This actor implements ILES_PlaceableInterface directly, so activation
+ * toggles its marker and can enable mesh physics. It does not inherit
+ * ALES_PlaceableBase and therefore is not a placeable class for the current
+ * ULES_PlaceableDefinition catalog.
  */
 UCLASS(Blueprintable)
 class KR26AU_MOVINGBOX_API ALES_TestBlock

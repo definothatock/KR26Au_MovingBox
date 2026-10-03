@@ -15,9 +15,12 @@ constexpr float PanelPlayModeHeight = 100.0f;
 /*
  * Text based prototype UI for LES; very barebone.
  *
- * Displays:
- * - Phase, entity catalog, quantities, selection, validity, and controls.
- * - Completion feedback and optional runtime debug information.
+ * Function:
+ * - Probe the entire world to get SessionManager and SessionConfigs.
+ * - Displays verbose LES actions, usages, states.
+ *
+ * TODO:
+ * - consider using delegate to communicate instead.
  */
 UCLASS()
 class KR26AU_MOVINGBOX_API ALES_HUD : public AHUD
@@ -26,7 +29,8 @@ class KR26AU_MOVINGBOX_API ALES_HUD : public AHUD
 
 public:
 	/* ==================== Overrides ==================== */
-	
+
+	// ANCHOR: currently very inefficient. It asks the entire world for the SessionManager and LESConfig.
 	virtual void DrawHUD() override;
 
 private:
