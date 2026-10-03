@@ -792,7 +792,9 @@ bool ULES_PlacementComponent::ValidateMeshPlacement(
 {
     ALES_SessionManager* ActiveSession = Session.Get();
 
-    if (!IsValid(ActiveSession) || !IsValid(Placeable))
+    if (!IsValid(ActiveSession)
+        || !IsValid(Placeable)
+        || !LevelConfig)
     {
         OutReason = TEXT("Mesh placement validation state is invalid.");
         return false;
@@ -808,24 +810,39 @@ bool ULES_PlacementComponent::ValidateMeshPlacement(
 
     if (VisualMesh->GetCollisionEnabled() == ECollisionEnabled::NoCollision)
     {
-        OutReason = TEXT(
-            "VisualMesh collision is disabled; it cannot be used for placement validation.");
-
+        OutReason = TEXT("VisualMesh collision is disabled; it cannot be used for placement validation.");
         return false;
     }
 
     const FBoxSphereBounds MeshBounds =
-    VisualMesh->CalcBounds(VisualMesh->GetComponentTransform());
+        VisualMesh->CalcBounds(VisualMesh->GetComponentTransform());
 
     const FVector SessionOrigin = ActiveSession->GetActorLocation();
-    const float MinAllowedZ = SessionOrigin.Z;
-    const float MaxAllowedZ =
-        SessionOrigin.Z + (LevelConfig->AreaHalfExtent.Z * 2.0f);
+    const FVector Area = LevelConfig->AreaHalfExtent;
 
-    if (MeshBounds.Origin.Z - MeshBounds.BoxExtent.Z < MinAllowedZ
-        || MeshBounds.Origin.Z + MeshBounds.BoxExtent.Z > MaxAllowedZ)
+    // The session actor is the bottom-center of the editable volume.
+    const FVector MinAllowed = SessionOrigin + FVector(-Area.X, -Area.Y, 0.0f);
+
+    const FVector MaxAllowed =
+        SessionOrigin + FVector(
+            Area.X,
+            Area.Y,
+            Area.Z * 2.0f);
+
+    const FVector MeshMin =
+        MeshBounds.Origin - MeshBounds.BoxExtent;
+
+    const FVector MeshMax =
+        MeshBounds.Origin + MeshBounds.BoxExtent;
+
+    if (MeshMin.X < MinAllowed.X
+        || MeshMax.X > MaxAllowed.X
+        || MeshMin.Y < MinAllowed.Y
+        || MeshMax.Y > MaxAllowed.Y
+        || MeshMin.Z < MinAllowed.Z
+        || MeshMax.Z > MaxAllowed.Z)
     {
-        OutReason = TEXT("VisualMesh extended outside the edit area's height.");
+        OutReason = TEXT("VisualMesh extends outside the edit area.");
         return false;
     }
 
