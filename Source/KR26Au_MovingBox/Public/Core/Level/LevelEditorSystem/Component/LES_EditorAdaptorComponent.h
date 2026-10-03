@@ -2,9 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "LES_EditorComponent.generated.h"
+#include "LES_EditorAdaptorComponent.generated.h"
 
-class ALES_Session;
+class ALES_SessionManager;
 class APlayerController;
 class UInputComponent;
 
@@ -23,16 +23,16 @@ DECLARE_LOG_CATEGORY_EXTERN(LES_Editor, Log, All);
  * - Custom controller Tick-driven interaction must also check session phase.
  *
  * TODO:
- * - Check can ticking cursor check be avoided.
+ * - Add mouse scroll to change plane height?
  * - Move Editor inputs to IAM and IA.
  */
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class KR26AU_MOVINGBOX_API ULES_EditorComponent : public UActorComponent
+class KR26AU_MOVINGBOX_API ULES_EditorAdaptorComponent : public UActorComponent
 {
     GENERATED_BODY()
 
 public:
-    ULES_EditorComponent();
+    ULES_EditorAdaptorComponent();
 
     /* ==================== Overrides ==================== */
 
@@ -46,7 +46,7 @@ public:
     /* ==================== APIs ==================== */
 
     bool Request_InitEditModeInput(
-        ALES_Session* InSession,
+        ALES_SessionManager* InSession,
         APlayerController* InController);
 
     // Take over FP control and use TD view.
@@ -74,7 +74,7 @@ private:
 
     /* ==================== Runtime State ==================== */
 
-    TWeakObjectPtr<ALES_Session> Session;
+    TWeakObjectPtr<ALES_SessionManager> Session;
     TWeakObjectPtr<APlayerController> Controller;
     TWeakObjectPtr<AActor> PreviousViewTarget;
 

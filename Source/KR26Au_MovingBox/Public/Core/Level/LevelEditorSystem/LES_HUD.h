@@ -4,7 +4,7 @@
 #include "GameFramework/HUD.h"
 #include "LES_HUD.generated.h"
 
-class ALES_Session;
+class ALES_SessionManager;
 
 /* ==================== Declares ==================== */
 
@@ -32,7 +32,7 @@ public:
 private:
 	/* ==================== Runtime State ==================== */
 
-	TWeakObjectPtr<ALES_Session> CachedSession;
+	TWeakObjectPtr<ALES_SessionManager> CachedSession;
 
 	/* ==================== Config ==================== */
 

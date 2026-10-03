@@ -4,14 +4,13 @@
 #include "Engine/DataAsset.h"
 #include "LES_ConfigStructs.generated.h"
 
-class AActor;
-class UStaticMesh;
+class ALES_PlaceableBase;
 class UWorld;
 
 /* ==================== Declares ==================== */
 
 UENUM(BlueprintType)
-enum class ELESPhase : uint8
+enum class ELES_Phase : uint8
 {
     Waiting, // waiting for player setup
     Editing, // player editing the level
@@ -26,7 +25,7 @@ enum class ELESPhase : uint8
  * Reusable entity metadata shared by multiple level configs.
  */
 UCLASS(BlueprintType)
-class KR26AU_MOVINGBOX_API ULESPlaceableDefinition : public UDataAsset
+class KR26AU_MOVINGBOX_API ULES_PlaceableDefinition : public UDataAsset
 {
     GENERATED_BODY()
 
@@ -34,24 +33,24 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LES")
     FText DisplayName = FText::FromString(TEXT("Unnamed-during-Config!"));
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LES", meta=(MustImplement="/Script/YourProject.LESPlaceableInterface"))
-    TSubclassOf<AActor> ActorClass;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LES", meta=(MustImplement="/Script/KR26Au_MovingBox.LESPlaceableInterface"))
+    TSubclassOf<ALES_PlaceableBase> ActorClass;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LES", meta=(ClampMin="1.0"))
-    FVector HalfExtent = FVector(50.0);
+    // UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LES", meta=(ClampMin="1.0"))
+    // FVector HalfExtent = FVector(50.0);
 
     // Uses HalfExtent during preview; SHOULD use the same mesh as ActorClass (beware of transforms).
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LES")
-    TObjectPtr<UStaticMesh> PreviewMesh = nullptr;
+    // UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LES")
+    // TObjectPtr<UStaticMesh> PreviewMesh = nullptr;
 };
 
 USTRUCT(BlueprintType)
-struct KR26AU_MOVINGBOX_API FLESLevelPlaceableEntry
+struct KR26AU_MOVINGBOX_API FLES_LevelPlaceableEntry
 {
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LES")
-    TObjectPtr<ULESPlaceableDefinition> Definition = nullptr;
+    TObjectPtr<ULES_PlaceableDefinition> Definition = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LES", meta=(ClampMin="0"))
     int32 Quantity = 1;
@@ -82,7 +81,7 @@ public:
     float FloorClearance = 0.5f;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LES|Placement")
-    TArray<FLESLevelPlaceableEntry> AvailableEntities;
+    TArray<FLES_LevelPlaceableEntry> AvailableEntities;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LES|Flow")
     TSoftObjectPtr<UWorld> NextLevel;

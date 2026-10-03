@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "LES_PlaceableInterface.h"
+#include "../LevelEditorSystem/Interface/LES_PlaceableInterface.h"
 #include "LES_TestBlock.generated.h"
 
 class UStaticMeshComponent;

@@ -1,4 +1,4 @@
-#include "KR26Au_MovingBox/Public/Core/Level/Content/LESGoal.h"
+#include "KR26Au_MovingBox/Public/Core/Level/Content/LES_Goal.h"
 
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -6,7 +6,7 @@
 #include "Engine/StaticMesh.h"
 #include "UObject/ConstructorHelpers.h"
 
-ALESGoal::ALESGoal()
+ALES_Goal::ALES_Goal()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -28,7 +28,7 @@ ALESGoal::ALESGoal()
 	FloorMarker->SetStaticMesh(CubeMesh.Object);
 }
 
-void ALESGoal::Tick(float DeltaSeconds)
+void ALES_Goal::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
@@ -47,7 +47,7 @@ void ALESGoal::Tick(float DeltaSeconds)
 	}
 }
 
-bool ALESGoal::ContainsWorldPoint(FVector WorldPoint) const
+bool ALES_Goal::ContainsWorldPoint(FVector WorldPoint) const
 {
 	const FVector LocalPoint = GoalBounds->GetComponentTransform().InverseTransformPosition(WorldPoint);
 

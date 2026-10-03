@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "LESGoal.generated.h"
+#include "LES_Goal.generated.h"
 
 class UBoxComponent;
 class UStaticMeshComponent;
@@ -18,12 +18,12 @@ class UStaticMeshComponent;
  * - Point containment, not full-object containment or swept detection.
  */
 UCLASS(Blueprintable)
-class KR26AU_MOVINGBOX_API ALESGoal : public AActor
+class KR26AU_MOVINGBOX_API ALES_Goal : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	ALESGoal();
+	ALES_Goal();
 
 	/* ==================== Overrides ==================== */
 

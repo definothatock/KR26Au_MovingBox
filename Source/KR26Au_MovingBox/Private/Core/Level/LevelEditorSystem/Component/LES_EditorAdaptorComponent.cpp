@@ -1,6 +1,6 @@
-#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/LES_EditorComponent.h"
+#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Component/LES_EditorAdaptorComponent.h"
 
-#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/LES_Session.h"
+#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/LES_SessionManager.h"
 
 #include "Components/InputComponent.h"
 #include "GameFramework/Pawn.h"
@@ -10,7 +10,7 @@
 
 DEFINE_LOG_CATEGORY(LES_Editor);
 
-ULES_EditorComponent::ULES_EditorComponent()
+ULES_EditorAdaptorComponent::ULES_EditorAdaptorComponent()
 {
     PrimaryComponentTick.bCanEverTick = true;
 }
@@ -20,8 +20,8 @@ ULES_EditorComponent::ULES_EditorComponent()
 
 /*--- ANCHOR: Change to IMC and Actions later, for better input configuration ---*/
 // Especially Function keys they overlap with editor 
-bool ULES_EditorComponent::Request_InitEditModeInput(
-    ALES_Session* InSession,
+bool ULES_EditorAdaptorComponent::Request_InitEditModeInput(
+    ALES_SessionManager* InSession,
     APlayerController* InController)
 {
     if (!IsValid(InSession)
@@ -51,11 +51,11 @@ bool ULES_EditorComponent::Request_InitEditModeInput(
 
     GlobalInput->BindKey(
         EKeys::F5, IE_Pressed,
-        this, &ULES_EditorComponent::Input_Reset);
+        this, &ULES_EditorAdaptorComponent::Input_Reset);
 
     GlobalInput->BindKey(
         EKeys::F6, IE_Pressed,
-        this, &ULES_EditorComponent::Input_NextLevel);
+        this, &ULES_EditorAdaptorComponent::Input_NextLevel);
 
     InController->PushInputComponent(GlobalInput);
 
@@ -68,39 +68,39 @@ bool ULES_EditorComponent::Request_InitEditModeInput(
 
     EditingInput->BindKey(
         EKeys::LeftMouseButton, IE_Pressed,
-        this, &ULES_EditorComponent::Input_ConfirmOrSelect);
+        this, &ULES_EditorAdaptorComponent::Input_ConfirmOrSelect);
 
     EditingInput->BindKey(
         EKeys::RightMouseButton, IE_Pressed,
-        this, &ULES_EditorComponent::Input_Cancel);
+        this, &ULES_EditorAdaptorComponent::Input_Cancel);
 
     EditingInput->BindKey(
         EKeys::Tab, IE_Pressed,
-        this, &ULES_EditorComponent::Input_CycleType);
+        this, &ULES_EditorAdaptorComponent::Input_CycleType);
 
     EditingInput->BindKey(
         EKeys::R, IE_Pressed,
-        this, &ULES_EditorComponent::Input_Rotate);
+        this, &ULES_EditorAdaptorComponent::Input_Rotate);
 
     EditingInput->BindKey(
         EKeys::M, IE_Pressed,
-        this, &ULES_EditorComponent::Input_Move);
+        this, &ULES_EditorAdaptorComponent::Input_Move);
 
     EditingInput->BindKey(
         EKeys::Delete, IE_Pressed,
-        this, &ULES_EditorComponent::Input_Remove);
+        this, &ULES_EditorAdaptorComponent::Input_Remove);
 
     EditingInput->BindKey(
         EKeys::Enter, IE_Pressed,
-        this, &ULES_EditorComponent::Input_Finish);
+        this, &ULES_EditorAdaptorComponent::Input_Finish);
 
     return true;
 }
 
-bool ULES_EditorComponent::Request_EnterEditing()
+bool ULES_EditorAdaptorComponent::Request_EnterEditing()
 {
     APlayerController* PC = Controller.Get();
-    ALES_Session* ActiveSession = Session.Get();
+    ALES_SessionManager* ActiveSession = Session.Get();
 
     if (!IsValid(PC) || !IsValid(ActiveSession) || bEditingApplied)
     {
@@ -136,7 +136,7 @@ bool ULES_EditorComponent::Request_EnterEditing()
     return true;
 }
 
-bool ULES_EditorComponent::Request_LeaveEditing()
+bool ULES_EditorAdaptorComponent::Request_LeaveEditing()
 {
     APlayerController* PC = Controller.Get();
 
@@ -174,23 +174,23 @@ bool ULES_EditorComponent::Request_LeaveEditing()
 /* ==================== Overrides ==================== */
 
 // ANCHOR: check can ticking-cursor-check be avoided later.
-void ULES_EditorComponent::TickComponent(
+void ULES_EditorAdaptorComponent::TickComponent(
     float DeltaTime,
     ELevelTick TickType,
     FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    ALES_Session* ActiveSession = Session.Get();
+    ALES_SessionManager* ActiveSession = Session.Get();
 
     if (IsValid(ActiveSession)
-        && ActiveSession->GetPhase() == ELESPhase::Editing)
+        && ActiveSession->GetPhase() == ELES_Phase::Editing)
     {
         UpdateCursorPreview();
     }
 }
 
-void ULES_EditorComponent::EndPlay(
+void ULES_EditorAdaptorComponent::EndPlay(
     const EEndPlayReason::Type EndPlayReason)
 {
     Request_LeaveEditing();
@@ -210,10 +210,10 @@ void ULES_EditorComponent::EndPlay(
 
 /*--- Cursor ---*/
 
-void ULES_EditorComponent::UpdateCursorPreview()
+void ULES_EditorAdaptorComponent::UpdateCursorPreview()
 {
     APlayerController* PC = Controller.Get();
-    ALES_Session* ActiveSession = Session.Get();
+    ALES_SessionManager* ActiveSession = Session.Get();
 
     if (!IsValid(PC)
         || !IsValid(ActiveSession)
@@ -247,14 +247,14 @@ void ULES_EditorComponent::UpdateCursorPreview()
 
 /*--- Input ---*/
 
-void ULES_EditorComponent::Input_ConfirmOrSelect()
+void ULES_EditorAdaptorComponent::Input_ConfirmOrSelect()
 {
-    ALES_Session* ActiveSession = Session.Get();
+    ALES_SessionManager* ActiveSession = Session.Get();
     APlayerController* PC = Controller.Get();
 
     if (!IsValid(ActiveSession)
         || !IsValid(PC)
-        || ActiveSession->GetPhase() != ELESPhase::Editing)
+        || ActiveSession->GetPhase() != ELES_Phase::Editing)
     {
         return;
     }
@@ -276,68 +276,68 @@ void ULES_EditorComponent::Input_ConfirmOrSelect()
     ActiveSession->Request_SelectPlaced(Hit.GetActor());
 }
 
-void ULES_EditorComponent::Input_CycleType()
+void ULES_EditorAdaptorComponent::Input_CycleType()
 {
-    if (ALES_Session* ActiveSession = Session.Get())
+    if (ALES_SessionManager* ActiveSession = Session.Get())
     {
         ActiveSession->Request_CycleType();
         UpdateCursorPreview();
     }
 }
 
-void ULES_EditorComponent::Input_Cancel()
+void ULES_EditorAdaptorComponent::Input_Cancel()
 {
-    if (ALES_Session* ActiveSession = Session.Get())
+    if (ALES_SessionManager* ActiveSession = Session.Get())
     {
         ActiveSession->Request_CancelPreview();
     }
 }
 
-void ULES_EditorComponent::Input_Rotate()
+void ULES_EditorAdaptorComponent::Input_Rotate()
 {
-    if (ALES_Session* ActiveSession = Session.Get())
+    if (ALES_SessionManager* ActiveSession = Session.Get())
     {
         ActiveSession->Request_RotatePreview();
         UpdateCursorPreview();
     }
 }
 
-void ULES_EditorComponent::Input_Move()
+void ULES_EditorAdaptorComponent::Input_Move()
 {
-    if (ALES_Session* ActiveSession = Session.Get())
+    if (ALES_SessionManager* ActiveSession = Session.Get())
     {
         ActiveSession->Request_MoveSelected();
         UpdateCursorPreview();
     }
 }
 
-void ULES_EditorComponent::Input_Remove()
+void ULES_EditorAdaptorComponent::Input_Remove()
 {
-    if (ALES_Session* ActiveSession = Session.Get())
+    if (ALES_SessionManager* ActiveSession = Session.Get())
     {
         ActiveSession->Request_RemoveSelected();
     }
 }
 
-void ULES_EditorComponent::Input_Finish()
+void ULES_EditorAdaptorComponent::Input_Finish()
 {
-    if (ALES_Session* ActiveSession = Session.Get())
+    if (ALES_SessionManager* ActiveSession = Session.Get())
     {
         ActiveSession->Request_FinishEditing();
     }
 }
 
-void ULES_EditorComponent::Input_Reset()
+void ULES_EditorAdaptorComponent::Input_Reset()
 {
-    if (ALES_Session* ActiveSession = Session.Get())
+    if (ALES_SessionManager* ActiveSession = Session.Get())
     {
         ActiveSession->Request_ResetLevel();
     }
 }
 
-void ULES_EditorComponent::Input_NextLevel()
+void ULES_EditorAdaptorComponent::Input_NextLevel()
 {
-    if (ALES_Session* ActiveSession = Session.Get())
+    if (ALES_SessionManager* ActiveSession = Session.Get())
     {
         ActiveSession->Request_NextLevel();
     }

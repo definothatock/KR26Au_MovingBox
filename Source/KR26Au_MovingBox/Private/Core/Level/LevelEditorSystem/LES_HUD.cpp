@@ -1,6 +1,6 @@
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/LES_HUD.h"
 
-#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/LES_Session.h"
+#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/LES_SessionManager.h"
 
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
@@ -15,14 +15,14 @@ void ALES_HUD::DrawHUD()
 
     if (!CachedSession.IsValid())
     {
-        for (TActorIterator<ALES_Session> It(GetWorld()); It; ++It)
+        for (TActorIterator<ALES_SessionManager> It(GetWorld()); It; ++It)
         {
             CachedSession = *It;
             break;
         }
     }
 
-    ALES_Session* Session = CachedSession.Get();
+    ALES_SessionManager* Session = CachedSession.Get();
 
     if (!IsValid(Session))
     {return;}
@@ -33,7 +33,7 @@ void ALES_HUD::DrawHUD()
         Config->AvailableEntities.Num() : 0;
 
     const float PanelHeight =
-        Session->GetPhase() == ELESPhase::Editing ?
+        Session->GetPhase() == ELES_Phase::Editing ?
         PanelEditModeHeight + EntryCount * PanelCharHeight
         : PanelPlayModeHeight;
 
@@ -41,7 +41,7 @@ void ALES_HUD::DrawHUD()
         FLinearColor(0.0f, 0.0f, 0.0f, 0.3f),
         10.0f,
         10.0f,
-        400.0f,
+        600.0f,
         PanelHeight);
 
     float Y = 24.0f;
@@ -54,20 +54,20 @@ void ALES_HUD::DrawHUD()
         Y += PanelCharHeight;
     };
 
-    const FString PhaseName = StaticEnum<ELESPhase>()->GetNameStringByValue(
+    const FString PhaseName = StaticEnum<ELES_Phase>()->GetNameStringByValue(
         static_cast<int64>(Session->GetPhase()));
 
     Line(FString::Printf(TEXT("LEVEL EDITOR | %s"), *PhaseName));
 
-    if (Session->GetPhase() == ELESPhase::Editing && Config)
+    if (Session->GetPhase() == ELES_Phase::Editing && Config)
     {
         Line(TEXT("Available entities (Tab cycles):"), FLinearColor::Yellow);
 
         for (int32 Index = 0; Index < EntryCount; ++Index)
         {
-            const FLESLevelPlaceableEntry& Entry =
+            const FLES_LevelPlaceableEntry& Entry =
                 Config->AvailableEntities[Index];
-            const ULESPlaceableDefinition& Definition = *Entry.Definition;
+            const ULES_PlaceableDefinition& Definition = *Entry.Definition;
 
             const bool bSelected =
                 Session->GetCurrentDefinition() == Index;
@@ -105,12 +105,12 @@ void ALES_HUD::DrawHUD()
     {
         Line(Session->GetStatusText());
 
-        if (Session->GetPhase() == ELESPhase::Completed)
+        if (Session->GetPhase() == ELES_Phase::Completed)
         {
             Line(TEXT("SUCCESS"), FLinearColor::Green);
             Line(TEXT("F6: next level | F5: restart"));
         }
-        else if (Session->GetPhase() == ELESPhase::Gameplay)
+        else if (Session->GetPhase() == ELES_Phase::Gameplay)
         {
             Line(TEXT("Bring the Target to the Goal."));
         }

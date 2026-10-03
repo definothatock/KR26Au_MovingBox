@@ -1,4 +1,4 @@
-#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/LES_TestBlock.h"
+#include "KR26Au_MovingBox/Public/Core/Level/Content/LES_TestBlock.h"
 
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
