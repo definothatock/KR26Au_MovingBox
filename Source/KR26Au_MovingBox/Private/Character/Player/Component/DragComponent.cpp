@@ -88,12 +88,13 @@ void UDragComponent::Request_StopDrag()
 	if (Grabbed != nullptr)
 	{
 		Grabbed->SetAngularDamping(0.0f); //Anchor: temp. should cache data and restore.
+		OnDroppingDown.Broadcast();
 	}
 	
 	Grabbed = nullptr;
 	GrabbedBone = NAME_None;
 	State = EDragState::Undrag;
-
+	
 
 	LocalGrabPoint = FVector::ZeroVector;
 	GrabDistance = 0.f;
@@ -197,9 +198,11 @@ bool UDragComponent::Auth_TryStartDrag(const FVector& ViewLoc, const FVector& Vi
 	if (Grabbed != nullptr)
 	{
 		Grabbed->SetAngularDamping(1.0f); //Anchor: temp. should cache data and restore.
+		OnPickingUp.Broadcast();
 	}
 	
 	State = EDragState::Dragging;
+	
 	return true;
 }
 

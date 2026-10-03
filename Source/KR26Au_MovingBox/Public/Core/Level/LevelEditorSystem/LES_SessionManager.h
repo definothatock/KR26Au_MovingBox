@@ -20,10 +20,7 @@ class ULES_PlacementComponent;
 DECLARE_LOG_CATEGORY_EXTERN(LES_Session, Log, All);
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
-    FLESPhaseChanged,
-    ELES_Phase,
-    NewPhase);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FLESPhaseChanged, ELES_Phase, NewPhase);
 
 /*
  * Facade of the Level Editor System. Coordinates level-session via rerouting to components.

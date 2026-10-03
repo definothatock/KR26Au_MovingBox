@@ -33,7 +33,7 @@ public:
 	bool IsMonitoring() const { return bMonitoring; }
 	float GetHoldTime() const { return HoldTime; }
 
-	/* ==================== Event Delegates ==================== */
+	/* ==================== Event ==================== */
 	
 	UPROPERTY(BlueprintAssignable, Category="LES")
 	FLESObjectiveCompleted OnObjectiveCompleted;

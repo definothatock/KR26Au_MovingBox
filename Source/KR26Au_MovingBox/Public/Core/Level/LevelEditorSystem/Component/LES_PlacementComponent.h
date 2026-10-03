@@ -11,6 +11,7 @@ class UPrimitiveComponent;
 class UStaticMeshComponent;
 class ALES_PlaceableBase;
 
+/* ==================== Declares ==================== */
 
 USTRUCT()
 struct FLES_PlacedRecord
@@ -32,6 +33,11 @@ struct FLES_PreviewCollisionState
     bool bGenerateOverlapEvents = false;
     bool bSimulatingPhysics = false;
 };
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLES_EntitySpawned);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLES_EntityRemoved);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLES_EntityMoved);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLES_PlacementRejected);
 
 
 /*
@@ -71,7 +77,8 @@ struct FLES_PreviewCollisionState
  *
  *
  * TODO:
- *  - Make Bound disallow placement too! Currently only upper bound will stop placing 
+ *  - Make Bound disallow placement too! Currently only upper bound will stop placing
+ *  - Change Broadcast route into cpp too, so designer can use DataAsset to setup, and do no wiring in BP.
  *  - If EditorAdaptor Changed the keys, remember the change the logs in here too! Should change to referencing bt then!
  *
  * Ref:
@@ -145,6 +152,17 @@ public:
     float GetPlacementPlaneZ() const { return PlacementPlaneZ; }
     float GetMinimumPlacementPlaneZ() const;
     float GetMaximumPlacementPlaneZ() const;
+
+    /* ==================== Event ==================== */
+
+    UPROPERTY(BlueprintAssignable, Category="LES")
+    FLES_EntitySpawned OnEntitySpawned;
+    UPROPERTY(BlueprintAssignable, Category="LES")
+    FLES_EntityRemoved OnEntityRemoved;
+    UPROPERTY(BlueprintAssignable, Category="LES")
+    FLES_EntityMoved OnEntityMoved;
+    UPROPERTY(BlueprintAssignable, Category="LES")
+    FLES_PlacementRejected OnPlacementRejected;
 
     /* ==================== Internal Functions ==================== */
 

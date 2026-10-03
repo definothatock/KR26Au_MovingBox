@@ -22,7 +22,8 @@ enum class EDragState : uint8
 	Dragging
 };
 
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartPickingUp);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartDropingDown);
 
 /**
  * Drag and pull for physical objects.
@@ -83,6 +84,11 @@ public:
 	
 	UFUNCTION(BlueprintPure, Category = "Drag")
 	bool IsDragging() const { return State == EDragState::Dragging; }
+
+	UPROPERTY(BlueprintAssignable, Category="LES")
+	FStartPickingUp OnPickingUp;
+	UPROPERTY(BlueprintAssignable, Category="LES")
+	FStartDropingDown OnDroppingDown;
 
 
 	

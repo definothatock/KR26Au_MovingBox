@@ -147,9 +147,9 @@ void ULES_PlacementComponent::AdjustPlacementPlane(float ScrollDelta)
 
     PlacementPlaneZ = FMath::Clamp(PlacementPlaneZ, MinZ, MaxZ);
 
-    StatusText = FString::Printf(
-        TEXT("Placement height: %.0f"),
-        PlacementPlaneZ);
+    StatusText = FString::Printf(TEXT("Placement height: %.0f"),PlacementPlaneZ);
+
+    OnEntityMoved.Broadcast();
 }
 
 void ULES_PlacementComponent::SelectType(int32 DefinitionIndex)
@@ -314,6 +314,8 @@ void ULES_PlacementComponent::RemoveSelected()
     StatusText = TEXT("Entity removed; its quantity was returned.");
 
     UE_LOG(LES_Session, Log, TEXT("[LES] Removed %s"), *ActorName);
+
+    OnEntityRemoved.Broadcast();
 }
 
 void ULES_PlacementComponent::RotatePreview()
@@ -324,6 +326,7 @@ void ULES_PlacementComponent::RotatePreview()
     }
 
     PreviewYaw = FMath::Fmod(PreviewYaw + 90.0f, 360.0f);
+    OnEntityMoved.Broadcast();
     bCandidateValid = false;
 }
 
@@ -389,6 +392,7 @@ bool ULES_PlacementComponent::ConfirmPlacement()
     if (!bEditingActive)
     {
         RejectPlacement(TEXT("Cannot place: placement editing is not active."));
+        OnPlacementRejected.Broadcast();
         return false;
     }
 
@@ -397,6 +401,7 @@ bool ULES_PlacementComponent::ConfirmPlacement()
     if (!bHasPreview || !IsValid(Preview))
     {
         RejectPlacement(TEXT("Cannot place: no active placeable preview."));
+        OnPlacementRejected.Broadcast();
         return false;
     }
 
@@ -406,13 +411,14 @@ bool ULES_PlacementComponent::ConfirmPlacement()
         && GetRemainingQuantity(CurrentDefinition) <= 0)
     {
         RejectPlacement(TEXT("Cannot place: no quantity remaining."));
+        OnPlacementRejected.Broadcast();
         return false;
     }
 
     if (!ValidateMeshPlacement(Preview, Preview, Reason))
     {
         RejectPlacement(FString::Printf(TEXT("Cannot place: actual mesh collision failed: %s"),*Reason));
-
+        OnPlacementRejected.Broadcast();
         return false;
     }
 
@@ -427,6 +433,8 @@ bool ULES_PlacementComponent::ConfirmPlacement()
         UE_LOG(LES_Session, Log, TEXT("[LES][Placement] Moved %s to %s"),
             *Preview->GetName(), *Preview->GetActorLocation().ToString());
 
+        OnEntityMoved.Broadcast();
+
         return true;
     }
 
@@ -434,16 +442,13 @@ bool ULES_PlacementComponent::ConfirmPlacement()
     Record.Actor = Preview;
     Record.DefinitionIndex = CurrentDefinition;
 
-    Preview->OnDestroyed.AddDynamic(
-        this,
-        &ULES_PlacementComponent::HandlePlacedActorDestroyed);
+    Preview->OnDestroyed.AddDynamic(this, &ULES_PlacementComponent::HandlePlacedActorDestroyed);
 
-    UE_LOG(
-        LES_Session,
-        Log,
-        TEXT("[LES][Placement] Placed '%s'; type=%d; location=%s; remaining=%d"),
+    UE_LOG(LES_Session, Log, TEXT("[LES][Placement] Placed '%s'; type=%d; location=%s; remaining=%d"),
         *Preview->GetName(), CurrentDefinition, *Preview->GetActorLocation().ToString(), GetRemainingQuantity(CurrentDefinition));
 
+    OnEntitySpawned.Broadcast();
+    
     const int32 PlacedDefinition = CurrentDefinition;
 
     ResetPreviewRuntimeState();
