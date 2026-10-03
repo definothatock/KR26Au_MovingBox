@@ -361,6 +361,14 @@ bool ALES_SessionManager::Request_ConfirmPlacement()
         && PlacementEditor->ConfirmPlacement();
 }
 
+void ALES_SessionManager::Request_AdjustPlacementPlane(float ScrollDelta)
+{
+    if (Phase == ELES_Phase::Editing && PlacementEditor)
+    {
+        PlacementEditor->AdjustPlacementPlane(ScrollDelta);
+    }
+}
+
 /* ==================== Queries ==================== */
 
 int32 ALES_SessionManager::GetRemainingQuantity(int32 DefinitionIndex) const
@@ -414,6 +422,13 @@ int32 ALES_SessionManager::GetPlacedCount() const
     return PlacementEditor
         ? PlacementEditor->GetPlacedCount()
         : 0;
+}
+
+float ALES_SessionManager::GetPlacementPlaneZ() const
+{
+    return PlacementEditor
+    ? PlacementEditor->GetPlacementPlaneZ()
+    : GetActorLocation().Z;
 }
 
 bool ALES_SessionManager::IsMovingSelection() const

@@ -69,6 +69,7 @@ private:
 
     /*--- Inputs ---*/
 
+    void Input_AdjustPlacementPlane(float AxisValue);
     void Input_ConfirmOrSelect();
     void Input_CycleType();
     void Input_Cancel();

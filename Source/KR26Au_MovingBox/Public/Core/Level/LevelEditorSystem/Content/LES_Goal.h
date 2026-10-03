@@ -48,7 +48,7 @@ protected:
 	/* ==================== Config ==================== */
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="LES|Config", meta=(ClampMin="0.0"))
-	float RequiredHoldSeconds = 0.25f;
+	float RequiredHoldSeconds = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="LES|Debug")
 	bool bDrawGoal = true;

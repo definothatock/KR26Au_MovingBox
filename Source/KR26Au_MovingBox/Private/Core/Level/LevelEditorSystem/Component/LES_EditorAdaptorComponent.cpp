@@ -77,6 +77,11 @@ bool ULES_EditorAdaptorComponent::Request_InitEditModeInput(
     EditingInput->Priority = 10000;
     EditingInput->bBlockInput = true;
 
+    EditingInput->BindAxisKey(
+        EKeys::MouseWheelAxis,
+        this,
+        &ULES_EditorAdaptorComponent::Input_AdjustPlacementPlane);
+
     EditingInput->BindKey(
         EKeys::LeftMouseButton, IE_Pressed,
         this, &ULES_EditorAdaptorComponent::Input_ConfirmOrSelect);
@@ -273,6 +278,27 @@ void ULES_EditorAdaptorComponent::UpdateCursorPreview() const
     ActiveSession->UpdatePlaceablePreview(
         RayOrigin + RayDirection * DistFromLESPlane,
         true);
+}
+
+void ULES_EditorAdaptorComponent::Input_AdjustPlacementPlane(
+    float AxisValue)
+{
+    if (FMath::IsNearlyZero(AxisValue))
+    {
+        return;
+    }
+
+    ALES_SessionManager* ActiveSession = Session.Get();
+
+    if (!IsValid(ActiveSession)
+        || ActiveSession->GetPhase() != ELES_Phase::Editing)
+    {
+        return;
+    }
+
+    ActiveSession->Request_AdjustPlacementPlane(AxisValue);
+    
+    UpdateCursorPreview();
 }
 
 /*--- Input ---*/

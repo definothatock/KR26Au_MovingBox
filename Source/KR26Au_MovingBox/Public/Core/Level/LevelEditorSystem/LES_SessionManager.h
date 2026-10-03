@@ -100,6 +100,9 @@ public:
     UFUNCTION(BlueprintCallable, Category="LES|Editing")
     bool Request_ConfirmPlacement();
 
+    UFUNCTION(BlueprintCallable, Category="LES|Editing")
+    void Request_AdjustPlacementPlane(float ScrollDelta);
+
 
     /* ==================== Queries ==================== */
 
@@ -127,7 +130,7 @@ public:
     AActor* GetSelectedActor() const;
     int32 GetPlacedCount() const;
 
-    float GetPlacementPlaneZ() const {return GetActorLocation().Z;}
+    float GetPlacementPlaneZ() const;
 
     bool IsMovingSelection() const;
 

@@ -71,8 +71,7 @@ struct FLES_PreviewCollisionState
  *
  *
  * TODO:
- *  - bound colour only reflects premature collision check, should I make it reflect other condition too (ie out of availability)?
- *  - I should reconsider: should the Bound or Mesh be authoritative check? 
+ *  - Make Bound disallow placement too! Currently only upper bound will stop placing 
  *  - If EditorAdaptor Changed the keys, remember the change the logs in here too! Should change to referencing bt then!
  *
  * Ref:
@@ -109,6 +108,8 @@ public:
     void ActivatePlacedActors(bool bActive);
 
     /* ----- Editing Commands ----- */
+
+    void AdjustPlacementPlane(float ScrollDelta);
     
     void SelectType(int32 DefinitionIndex);
     void CycleType();
@@ -140,6 +141,10 @@ public:
 
     FString GetStatusText() const { return StatusText; }
     void SetStatusText(const FString& InStatus) { StatusText = InStatus; }
+
+    float GetPlacementPlaneZ() const { return PlacementPlaneZ; }
+    float GetMinimumPlacementPlaneZ() const;
+    float GetMaximumPlacementPlaneZ() const;
 
     /* ==================== Internal Functions ==================== */
 
@@ -189,6 +194,7 @@ private:
 
     UFUNCTION()
     void HandlePlacedActorDestroyed(AActor* DestroyedActor);
+
     
     /* ==================== Runtime State ==================== */
     
@@ -210,6 +216,8 @@ private:
 
     FTransform CandidateTransform = FTransform::Identity;
     FTransform PreviewStartTransform = FTransform::Identity;
+
+    float PlacementPlaneZ = 0.0f;
 
     bool bEditingActive = false;
     bool bHasPreview = false;

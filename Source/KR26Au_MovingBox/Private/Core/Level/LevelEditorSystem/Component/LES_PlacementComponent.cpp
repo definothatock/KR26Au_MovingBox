@@ -34,6 +34,8 @@ void ULES_PlacementComponent::TickComponent(
 
 /* ==================== APIs ==================== */
 
+/* ----- Lifecycle ----- */
+
 void ULES_PlacementComponent::Initialize(
     ALES_SessionManager* InSession,
     ULES_ConfigStructs* InConfig)
@@ -47,6 +49,14 @@ void ULES_PlacementComponent::Initialize(
 void ULES_PlacementComponent::BeginEditing()
 {
     bEditingActive = true;
+
+    if (IsValid(Session.Get()) && LevelConfig)
+    {
+        const float MinZ = GetMinimumPlacementPlaneZ();
+        const float MaxZ = GetMaximumPlacementPlaneZ();
+
+        PlacementPlaneZ = (MinZ + MaxZ) * 0.5f;
+    }
 
     SelectedActor.Reset();
     ResetPreviewRuntimeState();
@@ -104,6 +114,42 @@ void ULES_PlacementComponent::ActivatePlacedActors(bool bActive)
                 bActive);
         }
     }
+}
+
+/* ----- Editing Commands ----- */
+
+void ULES_PlacementComponent::AdjustPlacementPlane(float ScrollDelta)
+{
+    if (!bEditingActive || !LevelConfig || FMath::IsNearlyZero(ScrollDelta))
+    {
+        return;
+    }
+
+    // Ideally mouse scroll stepper 
+    const float Step = LevelConfig->GridSize;
+
+    if (Step <= 0.0f)
+    {
+        return;
+    }
+
+    const float MinZ = GetMinimumPlacementPlaneZ();
+    const float MaxZ = GetMaximumPlacementPlaneZ();
+
+    PlacementPlaneZ = FMath::Clamp(
+        PlacementPlaneZ - (ScrollDelta * Step),
+        MinZ,
+        MaxZ);
+
+    // Aligned to the configured grid, relative to SessionManager's lower bound.
+    PlacementPlaneZ =
+        MinZ + FMath::GridSnap(PlacementPlaneZ - MinZ, Step);
+
+    PlacementPlaneZ = FMath::Clamp(PlacementPlaneZ, MinZ, MaxZ);
+
+    StatusText = FString::Printf(
+        TEXT("Placement height: %.0f"),
+        PlacementPlaneZ);
 }
 
 void ULES_PlacementComponent::SelectType(int32 DefinitionIndex)
@@ -466,6 +512,30 @@ bool ULES_PlacementComponent::IsManagedActor(
     return IsValid(Actor) && FindRecord(Actor) != INDEX_NONE;
 }
 
+float ULES_PlacementComponent::GetMinimumPlacementPlaneZ() const
+{
+    const ALES_SessionManager* ActiveSession = Session.Get();
+
+    return IsValid(ActiveSession)
+        ? ActiveSession->GetActorLocation().Z
+        : 0.0f;
+}
+
+float ULES_PlacementComponent::GetMaximumPlacementPlaneZ() const
+{
+    const ALES_SessionManager* ActiveSession = Session.Get();
+
+    if (!IsValid(ActiveSession) || !LevelConfig)
+    {
+        return GetMinimumPlacementPlaneZ();
+    }
+
+    return ActiveSession->GetActorLocation().Z
+        + (LevelConfig->AreaHalfExtent.Z * 2.0f);
+}
+
+/* ==================== Internal Functions ==================== */
+
 int32 ULES_PlacementComponent::FindRecord(
     const AActor* Actor) const
 {
@@ -600,11 +670,8 @@ bool ULES_PlacementComponent::BuildCandidateTransform(
     Location.Y =
         Origin.Y + FMath::GridSnap(PlanePoint.Y - Origin.Y, Grid);
     
-    // rid only aligns X & Y; Z is derived from the actual mesh, not LESPlacementBounds.
-    Location.Z =
-        Origin.Z
-        + LevelConfig->FloorClearance
-        - MeshBottomZ;
+    // Grid only aligns X & Y; Z is handle elsewhere: AdjustPlacementPlane().
+    Location.Z = PlacementPlaneZ + LevelConfig->FloorClearance - MeshBottomZ;
 
     OutTransform = FTransform(
         FRotator(0.0f, PreviewYaw, 0.0f),
@@ -660,10 +727,15 @@ bool ULES_PlacementComponent::ValidatePreviewBounds(
     const FVector MaxAllowed =
         Origin + FVector(Area.X, Area.Y, 0.0f);
 
+    const float MinAllowedZ = Origin.Z;
+    const float MaxAllowedZ = Origin.Z + (Area.Z * 2.0f);
+
     if (Position.X - WorldHalf.X < MinAllowed.X
         || Position.Y - WorldHalf.Y < MinAllowed.Y
         || Position.X + WorldHalf.X > MaxAllowed.X
-        || Position.Y + WorldHalf.Y > MaxAllowed.Y)
+        || Position.Y + WorldHalf.Y > MaxAllowed.Y
+        || Position.Z - WorldHalf.Z < MinAllowedZ
+        || Position.Z + WorldHalf.Z > MaxAllowedZ)
     {
         OutReason = TEXT("Placement bounds extend outside the edit area.");
         return false;
@@ -739,6 +811,21 @@ bool ULES_PlacementComponent::ValidateMeshPlacement(
         OutReason = TEXT(
             "VisualMesh collision is disabled; it cannot be used for placement validation.");
 
+        return false;
+    }
+
+    const FBoxSphereBounds MeshBounds =
+    VisualMesh->CalcBounds(VisualMesh->GetComponentTransform());
+
+    const FVector SessionOrigin = ActiveSession->GetActorLocation();
+    const float MinAllowedZ = SessionOrigin.Z;
+    const float MaxAllowedZ =
+        SessionOrigin.Z + (LevelConfig->AreaHalfExtent.Z * 2.0f);
+
+    if (MeshBounds.Origin.Z - MeshBounds.BoxExtent.Z < MinAllowedZ
+        || MeshBounds.Origin.Z + MeshBounds.BoxExtent.Z > MaxAllowedZ)
+    {
+        OutReason = TEXT("VisualMesh extended outside the edit area's height.");
         return false;
     }
 
