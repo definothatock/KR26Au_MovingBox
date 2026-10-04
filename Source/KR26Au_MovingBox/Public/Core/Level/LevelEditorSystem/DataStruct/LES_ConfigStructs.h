@@ -78,7 +78,7 @@ public:
 
     // Small uplift from the placement floor.
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LES|Placement", meta=(ClampMin="0.0"))
-    float FloorClearance = 0.5f;
+    float FloorClearance = 2.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LES|Placement")
     TArray<FLES_LevelPlaceableEntry> AvailableEntities;

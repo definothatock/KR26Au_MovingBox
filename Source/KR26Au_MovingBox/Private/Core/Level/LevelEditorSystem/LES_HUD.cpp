@@ -38,10 +38,10 @@ void ALES_HUD::DrawHUD()
         : PanelPlayModeHeight;
 
     DrawRect(
-        FLinearColor(0.0f, 0.0f, 0.0f, 0.3f),
+        FLinearColor(0.0f, 0.0f, 0.0f, 0.4f),
         10.0f,
         10.0f,
-        600.0f,
+        700.0f,
         PanelHeight);
 
     float Y = 24.0f;

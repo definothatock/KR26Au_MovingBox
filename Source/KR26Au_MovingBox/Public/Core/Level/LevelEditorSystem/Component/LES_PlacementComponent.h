@@ -77,7 +77,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLES_PlacementRejected);
  *
  *
  * TODO:
- *  - Make Bound disallow placement too! Currently only upper bound will stop placing
+ *  - LESPlacementBounds sometimes does not shown the actual fact (small footprint differences with VisualMesh);
+ *  Although VisualMesh is always the source of truth, might as well make Debug visual depends entirely on
+ *  VisualMesh only.
  *  - Change Broadcast route into cpp too, so designer can use DataAsset to setup, and do no wiring in BP.
  *  - If EditorAdaptor Changed the keys, remember the change the logs in here too! Should change to referencing bt then!
  *
