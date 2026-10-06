@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "LES_ConfigStructs.generated.h"
+#include "LES_LevelEditorConfig.generated.h"
 
 class ALES_PlaceableBase;
 class UWorld;
@@ -65,7 +65,7 @@ struct KR26AU_MOVINGBOX_API FLES_LevelPlaceableEntry
  * - Placeables use centered pivots, unit actor scale, and quarter-turn yaw.
  */
 UCLASS(BlueprintType)
-class KR26AU_MOVINGBOX_API ULES_ConfigStructs : public UDataAsset
+class KR26AU_MOVINGBOX_API ULES_LevelEditorConfig : public UDataAsset
 {
     GENERATED_BODY()
 

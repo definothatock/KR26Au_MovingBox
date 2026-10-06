@@ -5,7 +5,7 @@
 #include "LES_PlacementComponent.generated.h"
 
 class ALES_SessionManager;
-class ULES_ConfigStructs;
+class ULES_LevelEditorConfig;
 class UPrimitiveComponent;
 
 class UStaticMeshComponent;
@@ -108,7 +108,7 @@ public:
     
     void Initialize(
         ALES_SessionManager* InSession,
-        ULES_ConfigStructs* InConfig);
+        ULES_LevelEditorConfig* InConfig);
 
     void BeginEditing();
     void EndEditing();
@@ -220,7 +220,7 @@ private:
     
     TWeakObjectPtr<ALES_SessionManager> Session;
     UPROPERTY(Transient)
-    TObjectPtr<ULES_ConfigStructs> LevelConfig;
+    TObjectPtr<ULES_LevelEditorConfig> LevelConfig;
 
     UPROPERTY(Transient)
     TArray<FLES_PlacedRecord> PlacedRecords;

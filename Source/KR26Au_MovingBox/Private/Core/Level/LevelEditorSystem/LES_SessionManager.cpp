@@ -74,7 +74,7 @@ void ALES_SessionManager::BeginPlay()
     {
         UE_LOG(LES_Session, Error, TEXT("LevelConfig is NULL; Creating default LevelConfig."));
 
-        LevelConfig = NewObject<ULES_ConfigStructs>(this);
+        LevelConfig = NewObject<ULES_LevelEditorConfig>(this);
     }
 
     AreaBounds->SetBoxExtent(LevelConfig->AreaHalfExtent);

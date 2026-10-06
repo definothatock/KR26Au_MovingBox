@@ -27,7 +27,7 @@ void ALES_HUD::DrawHUD()
     if (!IsValid(Session))
     {return;}
 
-    ULES_ConfigStructs* Config = Session->GetLevelConfig();
+    ULES_LevelEditorConfig* Config = Session->GetLevelConfig();
 
     const int32 EntryCount = Config ?
         Config->AvailableEntities.Num() : 0;

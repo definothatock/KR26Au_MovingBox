@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "DataStruct/LES_ConfigStructs.h"
+#include "DataStruct/LES_LevelEditorConfig.h"
 #include "LES_SessionManager.generated.h"
 
 class ALES_Goal;
@@ -121,7 +121,7 @@ public:
     UFUNCTION(BlueprintPure, Category="LES")
     FString GetStatusText() const;
 
-    ULES_ConfigStructs* GetLevelConfig() const {return LevelConfig.Get();}
+    ULES_LevelEditorConfig* GetLevelConfig() const {return LevelConfig.Get();}
 
     int32 GetCurrentDefinition() const;
     AActor* GetSelectedActor() const;
@@ -165,7 +165,7 @@ private:
     /* ==================== Config ==================== */
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LES|Config", meta=(AllowPrivateAccess="true"))
-    TObjectPtr<ULES_ConfigStructs> LevelConfig;
+    TObjectPtr<ULES_LevelEditorConfig> LevelConfig;
 
     UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="LES|Config", meta=(AllowPrivateAccess="true"))
     TObjectPtr<AActor> TargetActor;

@@ -23,8 +23,21 @@ ALES_PlaceableBase::ALES_PlaceableBase()
     LESPlacementBounds->SetGenerateOverlapEvents(false);
     LESPlacementBounds->SetHiddenInGame(true);
 
-    // The base class guarantees inactive behavior by default.
     VisualMesh->SetSimulatePhysics(false);
+}
+
+void ALES_PlaceableBase::SetGameplayActive_Implementation(bool bActive)
+{
+    if (bGameplayActive == bActive)
+    {
+        return;
+    }
+
+    bGameplayActive = bActive;
+
+    ApplyGameplayState(bGameplayActive);
+
+    OnLESGameplayActiveChanged(bGameplayActive);
 }
 
 void ALES_PlaceableBase::PostInitializeComponents()
@@ -94,19 +107,6 @@ bool ALES_PlaceableBase::GetLESPlacementData(
     return true;
 }
 
-void ALES_PlaceableBase::SetGameplayActive_Implementation(bool bActive)
-{
-    if (bGameplayActive == bActive)
-    {
-        return;
-    }
-
-    bGameplayActive = bActive;
-
-    ApplyGameplayState(bGameplayActive);
-    // HandleLESGameplayActiveChanged(bGameplayActive);
-    OnLESGameplayActiveChanged(bGameplayActive);
-}
 
 void ALES_PlaceableBase::ApplyGameplayState(bool bActive)
 {
@@ -114,12 +114,7 @@ void ALES_PlaceableBase::ApplyGameplayState(bool bActive)
     {
         return;
     }
-
-    /*
-     * Keep query collision configuration under designer control. This is
-     * important because inactive actors still need to be selectable and
-     * considered during placement validation.
-     */
+    
     VisualMesh->SetSimulatePhysics(
         bActive && bSimulateVisualMeshDuringGameplay);
 

@@ -52,54 +52,32 @@ public:
 
 protected:
     virtual void PostInitializeComponents() override;
-
-    /*
-     * Blueprint extension point.
-     *
-     * Use this for gameplay behavior such as enabling movement, AI, timers,
-     * custom physics, effects, and so on.
-     *
-     * Do not reimplement SetGameplayActive directly in child Blueprints.
-     */
+    
+    void ApplyGameplayState(bool bActive);
+    
+    // Blueprint extension point; add custom behaviours.
     UFUNCTION(BlueprintImplementableEvent, Category="LES")
     void OnLESGameplayActiveChanged(bool bNowGameplayActive);
-    
-    /*
-     * If true, the base class enables physics for VisualMesh when gameplay
-     * begins, and disables it while in placement/editing state.
-     *
-     * Leave false for normal static placeables. More complicated entities
-     * should manage their own additional components in the activation hook.
-     */
+
+
+
+    /* ==================== Runtime State ==================== */
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="LES|Gameplay")
-    bool bSimulateVisualMeshDuringGameplay = false;
-
-private:
-    void ApplyGameplayState(bool bActive);
-
+    bool bSimulateVisualMeshDuringGameplay = true;
+    
     UPROPERTY(Transient)
     bool bGameplayActive = false;
-
     
     /* ==================== Components ==================== */
 
 protected:
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category="LES")
     TObjectPtr<USceneComponent> SceneRoot;
-
-    /*
-     * The one static mesh used by the lightweight placement preview.
-     *
-     * Designers may adjust its relative transform. That transform is copied
-     * to the session preview mesh.
-     */
+    
     UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category="LES")
     TObjectPtr<UStaticMeshComponent> VisualMesh;
-
-    /*
-     * Authoritative LES placement footprint.
-     * It has no collision itself; it is metadata for LES.
-     */
+    
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="LES")
     TObjectPtr<UBoxComponent> LESPlacementBounds;
 

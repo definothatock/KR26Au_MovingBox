@@ -1,7 +1,7 @@
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Component/LES_PlacementComponent.h"
 
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Content/LES_PlaceableBase.h"
-#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/DataStruct/LES_ConfigStructs.h"
+#include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/DataStruct/LES_LevelEditorConfig.h"
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/Interface/LES_PlaceableInterface.h"
 #include "KR26Au_MovingBox/Public/Core/Level/LevelEditorSystem/LES_SessionManager.h"
 
@@ -38,7 +38,7 @@ void ULES_PlacementComponent::TickComponent(
 
 void ULES_PlacementComponent::Initialize(
     ALES_SessionManager* InSession,
-    ULES_ConfigStructs* InConfig)
+    ULES_LevelEditorConfig* InConfig)
 {
     Session = InSession;
     LevelConfig = InConfig;
