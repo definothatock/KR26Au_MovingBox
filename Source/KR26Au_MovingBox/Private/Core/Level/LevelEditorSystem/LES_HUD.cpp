@@ -84,7 +84,7 @@ void ALES_HUD::DrawHUD()
 
         // ANCHOR: Change this once LES Editor Keys switched to IAM
         Line(TEXT("Left mouse: place / select | Right mouse: cancel preview | Tab: next type | R: rotate preview | M: move selected"));
-        Line(TEXT("Delete: remove selected | Enter: finish editing | F5: reset level"));
+        Line(TEXT("Delete: remove selected | Enter: finish editing | Y: reset level"));
 
         Line(
             FString::Printf(
@@ -108,7 +108,7 @@ void ALES_HUD::DrawHUD()
         if (Session->GetPhase() == ELES_Phase::Completed)
         {
             Line(TEXT("SUCCESS"), FLinearColor::Green);
-            Line(TEXT("F6: next level | F5: restart"));
+            Line(TEXT("U: next level | Y: restart"));
         }
         else if (Session->GetPhase() == ELES_Phase::Gameplay)
         {

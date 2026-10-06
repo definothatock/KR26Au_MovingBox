@@ -61,11 +61,11 @@ bool ULES_EditorAdaptorComponent::Request_InitEditModeInput(
     GlobalInput->bBlockInput = false;
 
     GlobalInput->BindKey(
-        EKeys::F5, IE_Pressed,
+        EKeys::Y, IE_Pressed,
         this, &ULES_EditorAdaptorComponent::Input_Reset);
 
     GlobalInput->BindKey(
-        EKeys::F6, IE_Pressed,
+        EKeys::U, IE_Pressed,
         this, &ULES_EditorAdaptorComponent::Input_NextLevel);
 
     InController->PushInputComponent(GlobalInput);

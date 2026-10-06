@@ -227,7 +227,7 @@ bool ALES_SessionManager::Request_FinishEditing()
 
     // Phase is changed before gameplay activation callbacks.
     FlowStatusText =
-        TEXT("Move the target into the goal. F5 resets the level.");
+        TEXT("Move the target into the goal. Y resets the level.");
 
     ChangePhase(ELES_Phase::Gameplay);
 
@@ -274,7 +274,7 @@ void ALES_SessionManager::Request_NextLevel()
 
     if (!LevelConfig || LevelConfig->NextLevel.IsNull())
     {
-        Reject(TEXT("No next level is configured. F5 restarts this level."));
+        Reject(TEXT("No next level is configured. Y restarts this level."));
         return;
     }
 
@@ -580,7 +580,7 @@ void ALES_SessionManager::HandleObjectiveCompleted()
     }
 
     FlowStatusText =
-        TEXT("Level completed! F6: next level. F5: reset.");
+        TEXT("Level completed! U: next level. Y: reset.");
 
     ChangePhase(ELES_Phase::Completed);
 }
